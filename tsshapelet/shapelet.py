@@ -20,7 +20,7 @@ class Shapelet:
         if len(ind) > 3:
             self.series = self.series[ind[2]:]
 
-    def downsample(self, factor):
+    def interpolate(self, factor):
         self.series = manipulations['interpolate'](self.series, int(len(self.series)*factor))
         
     ''' Candidate Extraction '''
