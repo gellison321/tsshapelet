@@ -1,7 +1,7 @@
 # <p align="center"> tsshapelet
 <div align="center">
 <p>
-<img alt="GitHub" src="https://img.shields.io/github/license/gellison321/timeseriespy">
+<img alt="GitHub" src="https://img.shields.io/github/license/gellison321/tsshapelet">
 </p>
 </div>
 
@@ -36,15 +36,14 @@
 ### **DEPENDENCIES**
 - Numpy
 - SciPy
-- DTW-Python
-- fastdtw
+- TSLearn
 - PeakUtils
 
 ##  <p align="center"> IMPLEMENTATION
 
 ```python
 import pandas as pd
-from timeseriespy.ts import TimeSeries
+from timeseriespy.shapelet import Shapelet
 from timeseriespy.functions import manipulations, metrics, barycenters
 
 df = pd.read_csv('./data/sample_data/001_labeled.csv')
@@ -53,18 +52,18 @@ univariate_ts_array = df['waist_vm']
 
 ''' Example of barycenter averaging with peak extraction '''
 
-ts = TimeSeries(univariate_ts_array, metric = 'dtw')
+shape = Shapelet(univariate_ts_array, metric = 'dtw')
 
 # Preprocessing
-ts.smooth(5)
-ts.quantile_normalization(q = 0.5)
-ts.phase_sync(mind_dist = 60, thres = 0.9)
+shape.smooth(5)
+shape.quantile_normalization(q = 0.5)
+shape.phase_sync(mind_dist = 60, thres = 0.9)
 
 # Candidate extraction from series
-ts.candidate_extraction(extraction = 'peak', min_dist = 60, thres = 0.8, max_dist = 120)
+shape.candidate_extraction(extraction = 'peak', min_dist = 60, thres = 0.8, max_dist = 120)
 
 # Shapelet creation from candidates
-ts.shapelet_creation(barycenter = 'interpolated')
+shape.shapelet_creation(barycenter = 'interpolated')
 
 
 ''' Example of basic array manipulations '''
