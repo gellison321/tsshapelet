@@ -30,7 +30,6 @@
 - Dynamic Time Warping
 - Cross Correlation
 - Euclidean Distance
-- FastDTW
 
 
 ### **DEPENDENCIES**
