@@ -24,10 +24,13 @@ class Shapelet:
         self.series = manipulations['interpolate'](self.series, int(len(self.series)*factor))
         
     ''' Candidate Extraction '''
- 
-    # Helper method for peak_extraction and windowed_extraction
-    # Slices time series by indices to make candidates
-    def _make_candidates(self, min_dist = 60, max_dist = 150):
+
+    def peak_analysis(self, min_dist = 60, thres = 0.75):
+        self.indices = manipulations['peak_utils'](self.series, thres = thres, min_dist = min_dist)
+
+    # Uses peakutils to extract subsequences between peak as candidates
+    def peak_extraction(self, min_dist = 60, thres = 0.6, max_dist = 150):
+        self.peak_analysis(min_dist = min_dist, thres = thres)
         self.candidates = []
         start = 0
         for i in self.indices: 
@@ -36,23 +39,13 @@ class Shapelet:
             if min_dist <= len(candidate) <= max_dist:
                 self.candidates.append(candidate)
 
-    def peak_analysis(self, min_dist = 60, thres = 0.75):
-        ind = manipulations['peak_utils'](self.series, thres = thres, min_dist = min_dist)
-        self.indices = ind
-
-    # Uses peakutils to extract subsequences between peak as candidates
-    def peak_extraction(self, min_dist = 60, thres = 0.6, max_dist = 150):
-        self.peak_analysis(min_dist = min_dist, thres = thres)
-        self._make_candidates(min_dist = min_dist, max_dist = max_dist)        
-
     # Selects qty of subsequences of random length within parameters from time series
     def random_extraction(self, qty, min_dist = 60, max_dist = 150):
-        self.indices = []
+        self.candidates = []
         for q in range(qty):
             index = np.random.randint(max_dist, len(self.series)-max_dist)
             length = np.random.randint(min_dist, max_dist) if min_dist != max_dist else max_dist
-            self.indices.extend([index-length//2, index+length//2])
-        self._make_candidates
+            self.candidates.append(self.series[index-length//2 : index+length//2])
 
     # runs the random extraction method with statistically derived parameters
     def normal_extraction(self, qty = None, min_dist = None, thres = None):
