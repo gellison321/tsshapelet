@@ -43,8 +43,8 @@
 
 ```python
 import pandas as pd
-from timeseriespy.shapelet import Shapelet
-from timeseriespy.functions import manipulations, metrics, barycenters
+from tsshapelet.shapelet import Shapelet
+from tsshapelet.functions import manipulations, metrics, barycenters
 
 df = pd.read_csv('./data/sample_data/001_labeled.csv')
 univariate_ts_array = df['waist_vm']

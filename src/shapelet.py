@@ -47,14 +47,14 @@ class Shapelet:
 
     # Selects qty of subsequences of random length within parameters from time series
     def random_extraction(self, qty, min_dist = 60, max_dist = 150):
-        self.candidates = []
-        for i in range(qty):
+        self.indices = []
+        for q in range(qty):
             index = np.random.randint(max_dist, len(self.series)-max_dist)
             length = np.random.randint(min_dist, max_dist) if min_dist != max_dist else max_dist
-            series = self.series[index - length//2 : index + length//2]
-            self.candidates.append(series)
+            self.indices.extend([index-length//2, index+length//2])
+        self._make_candidates
 
-    # runs the random extraction method with statisitcally derived parameters
+    # runs the random extraction method with statistically derived parameters
     def normal_extraction(self, qty = None, min_dist = None, thres = None):
         if min_dist != None and thres != None:
             self.peak_analysis(min_dist = min_dist, thres = thres)
