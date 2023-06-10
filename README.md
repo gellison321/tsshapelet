@@ -81,4 +81,4 @@ barycenters['interpolated']([arr1, arr2])  # -> np.array
 
 ```
 
-### [Full Implementation](https://github.com/gellison321/timeseriespy/blob/main/implementation.ipynb)
+### [Full Implementation](https://github.com/gellison321/tsshapelet/blob/main/implementation.ipynb)
