@@ -43,9 +43,8 @@ def dynamic_time_warping(arr1, arr2):
 def euclidean_barycenter(X):
     return np.mean(np.array(X), axis = 0)
 
-def interpolated_barycenter(X, size = 'avg'):
-    cases = {'max' : np.max, 'min' : np.min, 'avg' : np.mean}
-    length = cases[size](np.array([len(arr) for arr in X]), dtype = int)
+def interpolated_barycenter(X):
+    length = np.mean(np.array(list(map(len, X))), dtype = int)
     interpolated_candidates = [interpolate(arr, length) for arr in X]
     return euclidean_barycenter(interpolated_candidates)
 
