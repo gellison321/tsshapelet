@@ -47,9 +47,11 @@ $ pip install tsshapelet
 ### <p align="center"> [Full Implementation](https://github.com/gellison321/tsshapelet/blob/main/implementation.ipynb)
 
 ```python
+
+from tsshapelet import Shapelet
+from tsshapelet import manipulations, metrics, barycenters
+
 import pandas as pd
-from tsshapelet.shapelet import Shapelet
-from tsshapelet.functions import manipulations, metrics, barycenters
 
 df = pd.read_csv('./data/sample_data/001_labeled.csv')
 univariate_ts_array = df['waist_vm']
