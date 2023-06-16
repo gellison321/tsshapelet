@@ -9,7 +9,7 @@
 
 ### <p align="center">[Install From pip](https://pypi.org/project/tsshapelet/)
 ```
-$ pip install polycalc
+$ pip install tsshapelet
 ```
 
 ### **FEATURES**
