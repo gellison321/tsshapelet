@@ -1,8 +1,9 @@
-from distutils.core import setup, find_packages
+from distutils.core import setup
+from setuptools import find_packages
 
 setup(
   name = 'tsshapelet',
-  packages = ['tsshapelet'],
+  packages = find_packages(),
   version = '1.0.1',
   license='',
   description = 'A timeseries shapelet extraction tool for python.',
@@ -24,5 +25,4 @@ setup(
     'Programming Language :: Python :: 3.9',
   ],
   install_requires=['numpy','scipy', 'TSLearn', 'PeakUtils'],
-  packages = find_packages()
 )

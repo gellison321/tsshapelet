@@ -7,6 +7,11 @@
 
 ## <p align="center"> A timeseries shapelet extraction tool for python.
 
+### <p align="center">[Install From pip](https://pypi.org/project/tsshapelet/)
+```
+$ pip install polycalc
+```
+
 ### **FEATURES**
 
 #### Timeseries Preprocessing
