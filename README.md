@@ -39,6 +39,7 @@
 - PeakUtils
 
 ##  <p align="center"> IMPLEMENTATION
+### <p align="center"> [Full Implementation](https://github.com/gellison321/tsshapelet/blob/main/implementation.ipynb)
 
 ```python
 import pandas as pd
@@ -80,5 +81,3 @@ metrics['euclidean'](arr1, arr2) # -> float
 barycenters['interpolated']([arr1, arr2])  # -> np.array
 
 ```
-
-### [Full Implementation](https://github.com/gellison321/tsshapelet/blob/main/implementation.ipynb)
