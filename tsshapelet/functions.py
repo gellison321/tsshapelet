@@ -1,5 +1,5 @@
 import numpy as np
-from pyts.metrics import dtw
+from tslearn.metrics import dtw
 from scipy.interpolate import interp1d
 from scipy.signal import correlate
 import peakutils

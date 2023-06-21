@@ -48,9 +48,7 @@ $ pip install tsshapelet
 
 ```python
 
-from tsshapelet import Shapelet
-from tsshapelet import manipulations, metrics, barycenters
-
+from tsshapelet import Shapelet, manipulations, metrics, barycenters
 import pandas as pd
 
 df = pd.read_csv('./data/sample_data/001_labeled.csv')

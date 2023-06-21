@@ -11,12 +11,11 @@ setup(
   author_email = 'gellison321@gmail.com',
   url = 'https://github.com/gellison321/tsshapelet',
   download_url = 'https://github.com/gellison321/tsshapelet/archive/refs/tags/1.0.1.tar.gz',
-  keywords = ['timeseries', 'barycenter', 'shapelets', 'data science','data analysis'],
+  keywords = ['timeseries', 'barycenter', 'data science','data analysis'],
   classifiers=[
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
     'Intended Audience :: Science/Research',
-
     'Topic :: Software Development :: Build Tools',
     'Operating System :: OS Independent',
     'License :: OSI Approved :: MIT License',
