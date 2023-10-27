@@ -1,35 +1,146 @@
-from tsshapelet.functions import metrics, barycenters, manipulations, np
+from tsshapelet.util import metrics, barycenters, manipulations, np
 
 class Shapelet:
+    '''The Shapelet class takes in a series and allows for the extraction of shapelets from it.'''
 
     def __init__ (self, series, metric = 'dtw'):
         self.series = np.array(series)
         self.original = self.series
         self.metric = metric
 
-    ''' Preprocessing '''
-
     def quantile_normalization(self, quantile = 0.5):
+        '''
+
+        Normalizes the series by subtracting the quantile from the series.
+        
+        Parameters
+        ----------
+        quantile : float
+            The quantile to be subtracted from the series.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the normalized series.
+            
+        '''
         self.series = self.series - np.quantile(self.series, quantile)
+        return self
+    
+    def z_normalization(self):
+        '''
+
+        Normalizes the series by subtracting the mean and dividing by the standard deviation.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the normalized series.
+            
+        '''
+        self.series = (self.series - np.mean(self.series)) / np.std(self.series)
+        return self
+    
+    def min_max_normalization(self):
+        '''
+
+        Normalizes the series by subtracting the minimum and dividing by the maximum.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the normalized series.
+            
+        '''
+        self.series = (self.series - np.min(self.series)) / (np.max(self.series) - np.min(self.series))
+        return self
 
     def smooth(self, period):
-        self.series = manipulations['moving_average'](self.series, period)
+        '''
+        Smooths the series by applying a moving average.
 
-    def phase_sync(self, thres = .9, min_dist = 60):
-        ind = manipulations['peak_utils'](self.series, thres = thres, min_dist = min_dist)
-        if len(ind) > 3:
-            self.series = self.series[ind[2]:]
-
-    def interpolate(self, factor):
-        self.series = manipulations['interpolate'](self.series, int(len(self.series)*factor))
+        Parameters
+        ----------
+        period : int
+            The period of the moving average.
         
-    ''' Candidate Extraction '''
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the smoothed series.
+        '''
+        self.series = manipulations['moving_average'](self.series, period)
+        return self
+
+    def phase_sync(self, thres = .9):
+        '''
+        Removes the beginning of the series until the first peak is found.
+
+        Parameters
+        ----------
+        thres : float
+            The threshold to be used to find the first peak.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the phase synced series.
+        '''
+        self.series = self.series[manipulations['first_peak'](self.series, thres = thres):]
+        return self
+
+    def rescale(self, factor):
+        '''
+        Rescales the series by interpolating it to a new length.
+        
+        Parameters
+        ----------
+        factor : float
+            The factor by which to rescale the series.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the rescaled series.
+        '''
+        self.series = manipulations['interpolate'](self.series, int(len(self.series)*factor))
+        return self
 
     def peak_analysis(self, min_dist = 60, thres = 0.75):
+        '''
+        Finds the indices of the peaks in the series.
+        
+        Parameters
+        ----------
+        min_dist : int
+            The minimum distance between peaks.
+        thres : float
+            The threshold to be used to find the peaks.
+            
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the indices of the peaks.
+        '''
         self.indices = manipulations['peak_utils'](self.series, thres = thres, min_dist = min_dist)
-
-    # Uses peakutils to extract subsequences between peak as candidates
+        return self
+    
     def peak_extraction(self, min_dist = 60, thres = 0.6, max_dist = 150):
+        '''
+        Extracts the subsequences between the peaks from the series.
+
+        Parameters
+        ----------
+        min_dist : int
+            The minimum distance between peaks.
+        thres : float
+            The threshold to be used to find the peaks.
+        
+        Returns
+        -------
+        self : Shapelet
+
+        '''
         self.peak_analysis(min_dist = min_dist, thres = thres)
         self.candidates = []
         start = 0
@@ -38,17 +149,51 @@ class Shapelet:
             start = i 
             if min_dist <= len(candidate) <= max_dist:
                 self.candidates.append(candidate)
+        return self
 
-    # Selects qty of subsequences of random length within parameters from time series
     def random_extraction(self, qty, min_dist = 60, max_dist = 150):
+        '''
+        Extracts random subsequences from the series of a random length within a range.
+        
+        Parameters
+        ----------
+        qty : int
+            The number of subsequences to be extracted.
+        min_dist : int
+            The minimum length of the subsequences.
+        max_dist : int
+            The maximum length of the subsequences.
+            
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the extracted subsequences.
+        '''
         self.candidates = []
         for q in range(qty):
             index = np.random.randint(max_dist, len(self.series)-max_dist)
             length = np.random.randint(min_dist, max_dist) if min_dist != max_dist else max_dist
             self.candidates.append(self.series[index-length//2 : index+length//2])
+        return self
 
-    # runs the random extraction method with statistically derived parameters
     def normal_extraction(self, qty = None, min_dist = None, thres = None):
+        '''
+        Extracts random subsequnces from the series of a length within one standard deviation of the mean length of the peaks.
+        
+        Parameters
+        ----------
+        qty : int
+            The number of subsequences to be extracted.
+        min_dist : int
+            The minimum distance between peaks.
+        thres : float
+            The threshold to be used to find the peaks.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the extracted subsequences.
+        '''
         if min_dist != None and thres != None:
             self.peak_analysis(min_dist = min_dist, thres = thres)
         else:
@@ -58,39 +203,103 @@ class Shapelet:
         std = np.std(lengths, dtype = int)
         qty = len(self.series) // mean if qty == None else qty
         self.random_extraction(qty, min_dist = mean - std, max_dist = mean + std)
+        return self
 
-    # Slides window along series and extracts each subsequence as a candidate
     def windowed_extraction(self, window_length = 80, step = 1):
+        '''
+        Extracts subsequences from the series of a fixed length with a fixed step size.
+        
+        Parameters
+        ----------
+        window_length : int
+            The length of the subsequences.
+        step : int
+            The step size between subsequences.
+            
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the extracted subsequences.
+        '''
         self.candidates = []
         for i in np.arange(0, len(self.series) - window_length, step):
             self.candidates.append(self.series[i:i+window_length])
-
-    ''' Shapelet Creation '''
+        return self
     
-    # Returns the cost of comparing the given array to each other candidate elementwise
     def _compare_array_to_shapelets(self, array):
+        '''
+        Helper method for enumerating the distance between a given array and each shapelet in the shapelet list.
+        
+        Parameters
+        ----------
+        array : array-like
+            The array to be compared to the shapelets.
+        
+        Returns
+        -------
+        cost : float
+            The sum of the distances between the array and each shapelet.
+        '''
         cost = 0
         for shapelet in self.shapelets:
             cost += metrics[self.metric](shapelet, array)
         return cost
-
-    # Returns the cost of comparing the given array to the original series
+ 
     def _compare_array_to_series(self, array, step = 1):
+        '''
+        Helper method for enumerating the distance between a given array and each subsequence of the series, with a fixed step size.
+        
+        Parameters
+        ----------
+        array : array-like
+            The array to be compared to the subsequences.
+        step : int
+            The step size between subsequences.
+        
+        Returns
+        -------
+        cost : float
+            The sum of the distances between the array and each subsequence.
+        '''
         size = len(array)
         cost = 0
         for i in range(size, len(self.series) - size, step):
             cost += metrics[self.metric](array, self.series[i:i+size])
         return cost
     
-    # Returns the cost of comparing the given array to each other candidate elementwise
     def _compare_array_to_candidates(self, array):
+        '''
+        Helper method for enumerating the distance between a given array and each candidate in the candidate list.
+        
+        Parameters
+        ----------
+        array : array-like
+            The array to be compared to the candidates.
+        
+        Returns
+        -------
+        cost : float
+            The sum of the distances between the array and each candidate.
+        '''
         cost = 0
         for candidate in self.candidates:
             cost += metrics[self.metric](candidate, array)
         return cost
 
-    # Assigns the candidate with the minimum distance to each other candidate as the shapelet
     def order_candidates(self, comparison = 'candidates'):
+        '''
+        Orders the candidates by their distance to the series.
+        
+        Parameters
+        ----------
+        comparison : str
+            The method to be used to compare the candidates to the series.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the ordered candidates.
+        '''
         distances = {}
         comparisons = {'candidates': self._compare_array_to_candidates,
                        'series' : self._compare_array_to_series,
@@ -101,18 +310,54 @@ class Shapelet:
         self.candidates = []
         for distance in sorted(distances):
             self.candidates.append(distances[distance])
+        return self
 
-    # Refits all shapelets to a given window size
     def reinterpolate_shapelets(self, size):
+        '''
+        Reinterpolates the shapelets to a new length.
+        
+        Parameters
+        ----------
+        size : int
+            The length of the new shapelets.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the reinterpolated shapelets.
+        '''
         shapelets = []
         for shapelet in self.shapelets:
             shapelets.append(manipulations['reinterpolate'](shapelet, size))
         self.shapelets = shapelets  
+        return self
 
-    ''' Control Flow ''' 
-
-    # Control flow extract candidates from series
     def candidate_extraction(self, extraction = 'peak', min_dist = 60, thres = 0.8, max_dist = 120, sample = 100, window_length = 100, step = 1):
+        '''
+        Extracts the candidates from the series.
+        
+        Parameters
+        ----------
+        extraction : str
+            The method to be used to extract the candidates. {'peak', 'normal', 'random', 'windowed'}
+        min_dist : int
+            The minimum distance between peaks.
+        thres : float
+            The threshold to be used to find the peaks.
+        max_dist : int
+            The maximum distance between peaks.
+        sample : int
+            The number of candidates to be extracted.
+        window_length : int
+            The length of the subsequences.
+        step : int
+            The step size between subsequences.
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the extracted candidates.
+        '''
         if extraction == 'peak':
             self.peak_extraction(min_dist = min_dist, thres = thres, max_dist = max_dist)
         if extraction == 'normal':
@@ -121,11 +366,29 @@ class Shapelet:
             self.random_extraction(sample, min_dist = min_dist, max_dist = max_dist)
         if extraction == 'windowed':
             self.windowed_extraction(window_length = window_length, step = step)
-    
-    # Control flow for generating shapelets from candidates
+        return self
+
     def shapelet_selection(self, barycenter = None, qty = 1,comparison = 'candidates'):
+        '''
+        Selects the shapelets from the candidates.
+
+        Parameters
+        ----------
+        barycenter : str
+            The method to be used to select the shapelets. {'average', 'interpolated'}
+        qty : int
+            The number of shapelets to be selected.
+        comparison : str
+            The method to be used to compare the candidates to the series. {'candidates', 'series', 'geometric'}
+        
+        Returns
+        -------
+        self : Shapelet
+            The Shapelet object with the selected shapelets.
+        '''
         if barycenter != None:
             self.shapelets = [barycenters[barycenter](self.candidates)]
         else:
             self.order_candidates(comparison = comparison)
             self.shapelets = self.candidates[:qty]
+        return self
