@@ -89,7 +89,7 @@ plt.plot(series, color = 'red');
 # features = {'name' : func}
 
 # A suite of basic feature extraction provided:
-from features import statistical_features, time_series_features
+from tsshapelet import statistical_features, time_series_features
 
 # Loading test data to test the Shapelet class
 data = pd.read_csv('./data/sample_data/001_labeled.csv')
@@ -242,6 +242,8 @@ This function takes advantage of the early abandon condition of DTW, and perform
 This function can also be parallel processed using the multiprocessing library. Parallel processing is only recommended for very large searches, as the overhead is significant. To set the number of parallel cores to the maximum allowable, simply set the number very high, and the function automatically adjusts.
 
 ```python
+from tsshapelet import query
+
 query(q, # the 1d time series in question
       c, # the library of time series (list of arrays or 2d array)
       w = 0.9, # warping window constraint - (0,1)
@@ -258,6 +260,8 @@ Given a library of time series, this function returns the index of the time seri
 Like with the query() function, this function can also be parallel processed using the multiprocessing library. Parallel processing is only recommended for very large searches, as the overhead is significant. To set the number of parallel cores to the maximum allowable, simply set the number very high, and the function automatically adjusts.
 
 ```python
+from tsshapelet import pairwise_argmin
+
 pairwise_argmin(c, # the library of time series (list of arrays or 2d array)
                 w = 0.9, # warping window constraint - (0,1)
                 parallel_cores = 1, # number of CPU cores to implement in processing
