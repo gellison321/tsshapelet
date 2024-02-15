@@ -1,5 +1,5 @@
-from src.utils import barycenters, utils, np
-from src.comparator import pairwise_argmin
+from .utils import barycenters, utils, np
+from .comparator import pairwise_argmin
 
 class Shapelet:
     

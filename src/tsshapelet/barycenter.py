@@ -1,4 +1,4 @@
-from src.utils import utils, np
+from .utils import utils, np
 
 #-------------------------------------------#
 # Helper methods for barycenter computation #

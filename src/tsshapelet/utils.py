@@ -1,5 +1,5 @@
 import numpy as np
-from src.shapelet_dtw import dtw
+from .shapelet_dtw import dtw
 from scipy.interpolate import interp1d
 from scipy.signal import find_peaks
 

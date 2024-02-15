@@ -1,4 +1,4 @@
-from src.utils import metrics, np
+from .utils import metrics, np
 import itertools, multiprocessing, os
 
 ###################################################################################
