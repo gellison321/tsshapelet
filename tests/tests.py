@@ -1,4 +1,7 @@
-from src import *
+import sys
+sys.path.append('../src/tsshapelet')
+
+from tsshapelet import *
 import numpy as np
 
 def query_check(q, c):
