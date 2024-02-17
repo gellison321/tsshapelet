@@ -48,3 +48,33 @@ def dtw(I, J, w = 0.9, r = np.inf):
 
     # We take the square root here only once
     return dtw_matrix(I, J, w = w, r = r)[-1, -1]**0.5
+
+
+def ed(arr1, arr2, r = np.inf, w = 1):
+
+    if w != 1:
+        if type(w) not in [int, float] or 1 < w < 0:
+            raise ValueError('w must be a non-negative number between 0 and 1')
+        
+        step = int(1/w) if w != 1 else 1
+        arr1 = arr1[::step]
+        arr2 = arr2[::step]
+
+    return euclidean_distance(arr1, arr2, r)
+
+
+@njit
+def euclidean_distance(arr1, arr2, r = np.inf):
+
+    if r < np.inf:
+        dist = 0
+        for i in range(len(arr1)):
+            dist += (arr1[i] - arr2[i])**2
+            if dist > r:
+                return dist**0.5
+    else:
+        return np.linalg.norm(arr1-arr2) 
+
+metrics  = {'euclidean' : ed,
+            'dtw' : dtw
+            }

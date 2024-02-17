@@ -37,6 +37,6 @@ def average_barycenter(C):
 # def soft_dtw_barycenter():
 #     pass 
 
-barycenters = {'interpolated_average' : interpolated_average_barycenter,
-               'average' : average_barycenter,
-              }
+barycenters = {'interpolated' : interpolated_average_barycenter,
+               'average' : average_barycenter
+               }

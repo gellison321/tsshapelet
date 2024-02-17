@@ -1,5 +1,5 @@
-from .utils import metrics, np
-import itertools, multiprocessing, os
+from .metrics import metrics
+import itertools, multiprocessing, os, numpy as np
 
 ###################################################################################
 # query() function returns the index of the best matching series in the database. #
