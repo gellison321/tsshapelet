@@ -4,13 +4,13 @@ from setuptools import find_packages
 setup(
   name = 'tsshapelet',
   packages=find_packages(),
-  version = '2.0.6',
+  version = '2.0.7',
   license='',
   description = 'A timeseries shapelet extraction tool for python.',
   author = 'Grant Ellison',
   author_email = 'gellison321@gmail.com',
   url = 'https://github.com/gellison321/tsshapelet',
-  download_url = 'https://github.com/gellison321/tsshapelet/archive/refs/tags/2.0.6.tar.gz',
+  download_url = 'https://github.com/gellison321/tsshapelet/archive/refs/tags/2.0.7.tar.gz',
   keywords = ['timeseries', 'barycenter', 'data science','data analysis'],
   classifiers=[
     'Development Status :: 4 - Beta',
