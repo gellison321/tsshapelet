@@ -1,6 +1,12 @@
 import numpy as np
 from numba import njit
 from functools import lru_cache
+import psutil
+
+
+#########################################################################
+#                           Dynamic Time Warping                        #
+#########################################################################
 
 @njit
 def dtw_matrix(I, J, w = 0.9, r = np.inf):
@@ -45,7 +51,9 @@ def dtw_matrix(I, J, w = 0.9, r = np.inf):
         
     return cum_sum
 
-@lru_cache(maxsize=None)
+maxsize = int(psutil.virtual_memory().total / 32 / 4)
+
+@lru_cache(maxsize=maxsize)
 def d(I, J, w = 0.9, r = np.inf):
     '''
     Takes in tuples as arguments for caching purposes. Calls
@@ -60,7 +68,7 @@ def d(I, J, w = 0.9, r = np.inf):
 
 def dtw(I, J, w = 0.9, r = np.inf):
     '''
-    Wrapper function for the dtw_matrix and d functions. 
+    Wrapper function for the dtw_matrix function. 
     Converts inputs to tuples to allow for caching of the results.
     '''
 
@@ -69,13 +77,25 @@ def dtw(I, J, w = 0.9, r = np.inf):
     return d(I, J, w = w, r = r)
 
 
+#########################################################################
+#                            Euclidean distance                         #
+#########################################################################
+
+
+
 def ed(arr1, arr2, r = np.inf, w = 1):
+
+    '''
+    Wrapper function for the euclidean distance function. 
+    Converts inputs to tuples to allow for caching of the results.
+    '''
+
 
     arr1, arr2 = tuple(arr1), tuple(arr2)
 
     return euc(arr1, arr2, r, w)
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=maxsize)
 def euc(arr1, arr2, r = np.inf, w = 1):
 
     arr1, arr2 = np.array(arr1), np.array(arr2)
