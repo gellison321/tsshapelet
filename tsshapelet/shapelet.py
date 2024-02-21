@@ -264,7 +264,8 @@ class Shapelet:
 
         self.shapelet = self.candidates[index]
 
-        print('Access the random shapelet using the .shapelet attribute')
+        if verbose:
+            print('Access the random shapelet using the .shapelet attribute')
 
     def exhaustive_shapelet(self, window_length = 80, step = 1, w = 0.9, metric = 'dtw', parallel_cores = 1, verbose = True):
         '''
@@ -301,7 +302,8 @@ class Shapelet:
 
         self.shapelet = self.candidates[index]
 
-        print('Access the exhaustive shapelet using the .shapelet attribute')
+        if verbose:
+            print('Access the exhaustive shapelet using the .shapelet attribute')
 
 
     def barycenter_shapelet(self, min_dist = 60, thres = 0.6, max_dist = 150, barycenter = 'interpolated', verbose = True):
@@ -332,4 +334,5 @@ class Shapelet:
 
         self.shapelet =  barycenters[barycenter](self.candidates)
         
-        print('Access the barycenter shapelet using the .shapelet attribute')
+        if verbose:
+            print('Access the barycenter shapelet using the .shapelet attribute')

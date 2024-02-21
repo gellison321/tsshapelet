@@ -1,5 +1,6 @@
 import numpy as np
 from numba import njit
+from functools import lru_cache
 
 @njit
 def dtw_matrix(I, J, w = 0.9, r = np.inf):
@@ -44,13 +45,40 @@ def dtw_matrix(I, J, w = 0.9, r = np.inf):
         
     return cum_sum
 
-def dtw(I, J, w = 0.9, r = np.inf):
+@lru_cache(maxsize=None)
+def d(I, J, w = 0.9, r = np.inf):
+    '''
+    Takes in tuples as arguments for caching purposes. Calls
+    the dtw_matrix function to compute the cost matrix and returns
+    the square root of the best cost found in the matrix.
+    '''
+
+    I, J = np.array(I), np.array(J)
 
     # We take the square root here only once
     return dtw_matrix(I, J, w = w, r = r)[-1, -1]**0.5
 
+def dtw(I, J, w = 0.9, r = np.inf):
+    '''
+    Wrapper function for the dtw_matrix and d functions. 
+    Converts inputs to tuples to allow for caching of the results.
+    '''
+
+    I, J = tuple(I), tuple(J)
+
+    return d(I, J, w = w, r = r)
+
 
 def ed(arr1, arr2, r = np.inf, w = 1):
+
+    arr1, arr2 = tuple(arr1), tuple(arr2)
+
+    return euc(arr1, arr2, r, w)
+
+@lru_cache(maxsize=None)
+def euc(arr1, arr2, r = np.inf, w = 1):
+
+    arr1, arr2 = np.array(arr1), np.array(arr2)
 
     if w != 1:
         if type(w) not in [int, float] or 1 < w < 0:
@@ -62,8 +90,6 @@ def ed(arr1, arr2, r = np.inf, w = 1):
 
     return euclidean_distance(arr1, arr2, r)
 
-
-@njit
 def euclidean_distance(arr1, arr2, r = np.inf):
 
     if r < np.inf:
