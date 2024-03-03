@@ -154,7 +154,7 @@ class Shapelet:
     # Shapelet extraction
     # --------------------------------------------------------------------------------
 
-    def random_shapelet(self, qty, min_dist = 60, max_dist = 150, parallel_cores = 1, w = 0.9, metric = 'dtw', verbose = True):
+    def random_shapelet(self, qty = 1000, min_dist = 60, max_dist = 150, parallel_cores = 1, w = 0.9, metric = 'dtw', verbose = True):
         '''
         Extracts a specified quantity of random shapelet candidates from the dataset, selects the one with the minimum pairwise 
         distance to all others based on a given distance metric, and assigns it as the shapelet for this instance.

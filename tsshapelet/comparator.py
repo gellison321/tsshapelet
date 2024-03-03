@@ -16,7 +16,6 @@ def find_pool_size(parallel_cores):
     Returns:
         pool_size int: the corrected number of CPU core to implement.
     '''
-    
     maximum = os.cpu_count()
 
     if parallel_cores > maximum:
@@ -97,6 +96,12 @@ def query(q, C, w = 0.9, metric = 'dtw', parallel_cores = 1):
         >>> C = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         >>> query(q, C, w=1, metric='euclidean', parallel_cores=2)
         1
+
+    Note:
+        The sequential query utilizes the early abandon condition of dtw. Because of the overhead
+        of the multiprocessing, and the efficacy of the early abandon condition, the parallel query
+        is only more efficient for very large searches, or potentially in worst-case scenarios, where
+        the early abandon condition is scarcely met. 
     '''
     if parallel_cores > 1:
         return parallel_query(q, C, w, parallel_cores, metric)
@@ -184,14 +189,14 @@ def sequential_pairwise_argmin(C, metric = 'dtw', w = 0.9):
     min_distance = float('inf')
     min_distance_index = None
 
-    for i in range(len(C)):
+    for i, c1 in enumerate(C):
 
         total_distance = 0
 
-        for j in range(len(C)):
+        for j, c2 in enumerate(C):
 
             if i != j:
-                total_distance += metrics[metric](C[i], C[j], w = w)
+                total_distance += metrics[metric](c1, c2, w = w)
 
         if total_distance < min_distance:
             min_distance = total_distance
