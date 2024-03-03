@@ -17,68 +17,34 @@ class Shapelet:
         self.original = self.series
         self.features = {}
         self.candidates = []
-        self.shapelets = None
 
-    ##########################################################################
-    # The following methods manipulate the series directly for preprocessing #
-    ##########################################################################
+    # --------------------------------------------------------------------------------
+    # Preprocessing - direct array manipulations
+    # --------------------------------------------------------------------------------
 
     def quantile_normalization(self, quantile = 0.5):
-        '''
-        Normalizes the series by subtracting the quantile from the series.
-        
-        Parameters
-        ----------
-        quantile : float
-            The quantile to be subtracted from the series.
-        
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the normalized series.
-            
-        '''
+        ''' De-medians the time series '''
         self.series = self.series - np.quantile(self.series, quantile)
         return self
     
+    
     def z_normalization(self):
-        '''
-        Normalizes the series by subtracting the mean and dividing by the standard deviation.
-
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the z-normalized series.
-        '''
+        ''' z = (x-mu)/sigma '''
         mean = np.mean(self.series)
         self.series = (self.series - mean) / np.std(self.series)
         return self
     
     def min_max_normalization(self):
-        '''
-        Normalizes the series by subtracting the minimum and dividing by the range.
-
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the min-max normalized series.
-        '''
+        ''' Normalize the series between zero and one '''
         self.series = (self.series - np.min(self.series)) / (np.max(self.series) - np.min(self.series))
         return self
 
     def smooth(self, period):
-        '''
-        Smooths the series by applying a moving average.
-
-        Parameters
-        ----------
-        period : int
-            The period of the moving average.
+        ''' 
+        Performs center moving average smoothing according to the period
         
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the smoothed series.
+        Parameters:
+            period (int): The number of indices to take the average over.
         '''
         ret = np.cumsum(self.series)
         ret[period:] = ret[period:] - ret[:-period]
@@ -90,14 +56,7 @@ class Shapelet:
         Removes the beginning of the series until the first peak is found.
 
         Parameters
-        ----------
-        thres : float
-            The threshold to be used to find the first peak.
-        
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the phase synced series.
+            thres (float): The threshold to be used to find the first peak.
         '''
         thres = np.quantile(self.series, thres)
         first = [0]
@@ -118,63 +77,39 @@ class Shapelet:
         '''
         Rescales the series by interpolating it to a new length.
         
-        Parameters
-        ----------
-        factor : float
-            The factor by which to rescale the series.
-        
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the rescaled series.
+        Parameters:
+            factor (float): The factor by which to rescale the series. 0.5 interpolates the 
+            series to half its original length. In effect, downsampling by half.
         '''
         if (0 > factor > 1):
             raise ValueError('The factor must be between 0 and 1.')
 
         self.series = utils['interpolate'](self.series, int(len(self.series)*factor))
         return self
-    
-    ######################################################################################################
-    # The following methods extract features from the series and add them to the self.features attribute #
-    ######################################################################################################
+
+    # --------------------------------------------------------------------------------
+    # Feature extraction
+    # --------------------------------------------------------------------------------
 
     def extract_features(self, **functions):
         '''
-        Extracts time series features from the series.
-        
-        Parameters
-        ----------
-        func : 
-            The features to be extracted in the form of 
-                keyword = function.
-        
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the extracted time series features.
+        Extracts time series features from the series. Pass in feature extraction
+        by keyword pairs. Saves to self.features attribute.
         '''
         for function in functions:
             self.features[function] = functions[function](self.series)
 
-    ############################################################
-    # The following methods extract candidates from the series #
-    ############################################################
+    # --------------------------------------------------------------------------------
+    # Candidate extraction
+    # --------------------------------------------------------------------------------
 
     def peak_extraction(self, min_dist = 60, thres = 0.6, max_dist = 150):
         '''
         Extracts the subsequences between the peaks from the series.
 
         Parameters
-        ----------
-        min_dist : int
-            The minimum distance between peaks.
-        thres : float
-            The threshold to be used to find the peaks.
-        
-        Returns
-        -------
-        self : Shapelet
-
+            min_dist (int): The minimum distance between peaks.
+            thres (float): The threshold to be used to find the peaks.
         '''
         peaks = utils['find_peaks'](self.series, min_dist = min_dist, thres = thres)
         self.candidates = []
@@ -191,18 +126,9 @@ class Shapelet:
         Extracts random subsequences from the series of a random length within a range.
         
         Parameters
-        ----------
-        qty : int
-            The number of subsequences to be extracted.
-        min_dist : int
-            The minimum length of the subsequences.
-        max_dist : int
-            The maximum length of the subsequences.
-            
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the extracted subsequences.
+            qty (int): The number of subsequences to be extracted.
+            min_dist (int): The minimum length of the subsequences.
+            max_dist (int): The maximum length of the subsequences.
         '''
         self.candidates = []
         for _ in range(qty):
@@ -216,38 +142,38 @@ class Shapelet:
         Extracts subsequences from the series of a fixed length with a fixed step size.
         
         Parameters
-        ----------
-        window_length : int
-            The length of the subsequences.
-        step : int
-            The step size between subsequences.
-            
-        Returns
-        -------
-        self : Shapelet
-            The Shapelet object with the extracted subsequences.
+            window_length (int): The length of the subsequences.
+            step (int): The step size between subsequences.
         '''
         self.candidates = []
         for i in np.arange(0, len(self.series) - window_length, step):
             self.candidates.append(self.series[i:i+window_length])
         return self
     
-    ###########################################################
-    # The following methods extract shapelets from the series #
-    ###########################################################
+    # --------------------------------------------------------------------------------
+    # Shapelet extraction
+    # --------------------------------------------------------------------------------
 
     def random_shapelet(self, qty, min_dist = 60, max_dist = 150, parallel_cores = 1, w = 0.9, metric = 'dtw', verbose = True):
         '''
-        Extracts a random shapelet from the candidates.
+        Extracts a specified quantity of random shapelet candidates from the dataset, selects the one with the minimum pairwise 
+        distance to all others based on a given distance metric, and assigns it as the shapelet for this instance.
 
-        Parameters
-        ----------
-        args : 
-            The arguments to be passed to the distance function.
-            min_dist : int
-                The minimum distance of random subsequences.
-            thres:
-            max_dist
+        This method randomly selects `qty` shapelet candidates, each with a random length within the specified range (`min_dist`, `max_dist`). 
+        It then computes the pairwise distances between all candidates using the specified `metric` and `w` parameters. 
+        The candidate with the minimum pairwise distance is chosen as the shapelet for the instance.
+
+        Parameters:
+            qty (int): The number of subsequences to be extracted.
+            min_dist (int, optional): The minimum length of the subsequences. Defaults to 60.
+            max_dist (int, optional): The maximum length of the subsequences. Defaults to 150.
+            parallel_cores (int, optional): The number of parallel cores to use for computing pairwise distances. Defaults to 1.
+            w (float, optional): The window size parameter for the distance function, used when `metric` is 'dtw'. Defaults to 0.9.
+            metric (str, optional): The distance metric to use for computing pairwise distances. Defaults to 'dtw'.
+            verbose (bool, optional): If True, prints the progress and results of the extraction and selection process. Defaults to True.
+
+        Note: The effectiveness of the selected shapelet for tasks such as time series classification or clustering depends on the characteristics
+        of the dataset and the specified parameters.
         '''
         if verbose:
             print(f'Extracting {qty} random candidates of a random length in the range: ({min_dist}, {max_dist})')
@@ -267,25 +193,23 @@ class Shapelet:
         if verbose:
             print('Access the random shapelet using the .shapelet attribute')
 
+
     def exhaustive_shapelet(self, window_length = 80, step = 1, w = 0.9, metric = 'dtw', parallel_cores = 1, verbose = True):
         '''
-        Extracts a shapelet from the candidates by calculating the pairwise distances between all candidates. Candidates
-        are extracted from the series using a sliding window.
+        Performs an exhaustive search for the best shapelet within the series by extracting all possible subsequences using a sliding window approach, 
+        then selects the shapelet with the minimum pairwise distance based on the specified distance metric.
 
         Parameters
-        ----------
-        window_length : int
-            The length of the subsequences.
-        step : int
-            The step size between subsequences.
-        w : int or float
-            The warping window.
-        metric : str
-            The distance metric to be used.
-        parallel_cores : int
-            The number of cores to be used for parallel processing.
-        verbose : bool
-            The verbosity of the output.
+            window_length (int, optional): The length of the sliding window used to extract subsequences from the series. Defaults to 80.
+            step (int, optional): The step size for the sliding window, determining the amount of overlap between consecutive subsequences. Defaults to 1.
+            w (float, optional): The window size parameter for the distance function, used when `metric` is 'dtw'. This parameter limits the alignment path in the dynamic time warping calculation. Defaults to 0.9.
+            metric (str, optional): The distance metric to use for computing pairwise distances between subsequences. Supports 'dtw' (Dynamic Time Warping) and 'euclidean' (Euclidean distance). Defaults to 'dtw'.
+            parallel_cores (int, optional): The number of cores to use for parallel computation of pairwise distances. Defaults to 1.
+            verbose (bool, optional): If True, prints informative messages about the progress of shapelet extraction and selection. Defaults to True.
+
+        Note
+            The choice of `window_length` and `step` parameters can significantly affect the computational cost and the quality of the extracted shapelet. 
+            Smaller steps increase the resolution of the search but require more computation.
         '''
         if verbose:
             print(f'Extracting candidates from the series using a sliding window of length {window_length} and step {step}')
@@ -308,21 +232,18 @@ class Shapelet:
 
     def barycenter_shapelet(self, min_dist = 60, thres = 0.6, max_dist = 150, barycenter = 'interpolated', verbose = True):
         '''
-        Extracts a shapelet from the candidates by creating a barycenter from the candidates. Candidates
-        are extracted from the series using peak extraction.
+        Extracts shapelet candidates from the series using peak extraction based on specified parameters and then computes a 
+        barycenter shapelet from these candidates. The barycenter represents a 'central' shapelet that summarizes the set of candidates.
 
         Parameters
-        ----------
-        min_dist : int
-            The minimum distance between peaks.
-        thres : float
-            The threshold to be used to find the peaks.
-        max_dist : int
-            The maximum distance between peaks.
-        barycenter : str
-            The type of barycenter to be used.
-        verbose : bool
-            The verbosity of the output.
+            min_dist (int, optional): The minimum distance between peaks to be considered separate candidates during peak extraction. Defaults to 60.
+            thres (float, optional): The threshold value for peak extraction, used to determine the significance of peaks. Defaults to 0.6.
+            max_dist (int, optional): The maximum distance considered for peak extraction. This parameter can limit the search space for peaks. Defaults to 150.
+            barycenter (str, optional): The method used to calculate the barycenter from the set of candidates. Supports 'interpolated' or other predefined methods in the `barycenters` dictionary. Defaults to 'interpolated'.
+            verbose (bool, optional): If True, prints informative messages about the progress of shapelet extraction and barycenter creation. Defaults to True.
+
+        Note
+            This shapelet method is especially effective for cyclical time series data.
         '''
         if verbose:
             print(f'Extracting candidates from the series using peak extraction with a minimum distance of {min_dist} and a threshold of {thres}')

@@ -1,8 +1,8 @@
 from .utils import utils, np
 
-#############################################################################
-# Helper methods for statistical feature extraction in the TimeSeries class #
-#############################################################################
+# --------------------------------------------------------------------------------
+# Helper methods for statistical feature extraction in the TimeSeries class 
+# --------------------------------------------------------------------------------
 
 def skew(array):
     '''
@@ -15,6 +15,7 @@ def skew(array):
         skewness: float
     '''
     return np.mean((array - np.mean(array))**3)/(np.std(array)**3)
+
 
 def kurtosis(array):
     '''
@@ -43,6 +44,7 @@ def quartile(array):
     '''
     return np.quantile(array, 0.25)
 
+
 def iqr(array):
     '''
     Computes the interquartile range of an array.
@@ -67,9 +69,9 @@ statistical_features = {'min': np.min,
                         'iqr': iqr
                         }
 
-#---------------------------------------------------------------------------#
-# Helper methods for time series feature extraction in the TimeSeries class #
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------------
+# Helper methods for time series feature extraction in the TimeSeries class 
+# --------------------------------------------------------------------------------
 
 def mean_peak_length(array):
     '''
@@ -108,20 +110,8 @@ def energy(array):
     '''
     return np.sum(array**2)
 
-def mean_crossing_rate(array):
-    '''
-    Computes the mean crossing rate of an array.
-    
-    Parameters:
-        array: array-like, shape = (n_instances, length)
-    
-    Returns:
-        mean_crossing_rate: float
-    '''
-    return len(np.diff(np.sign(array)))
 
 time_series_features = {'mean_peak_length': mean_peak_length,
                         'zero_crossings': zero_crossings,
-                        'energy': energy,
-                        'mean_crossing_rate': mean_crossing_rate
-                        }
+                        'energy': energy
+                        }   
